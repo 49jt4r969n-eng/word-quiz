@@ -126,15 +126,21 @@ button {
   border-radius: 6px;
 }
 
-#question, #answer {
-  overflow-y: hidden;       /* ← 縦スクロール禁止 */
-  overflow-x: hidden;       /* ← 横スクロールも禁止（必要なら） */
-  white-space: normal;      /* ← 自然に折り返す */
-  text-align: center;       /* ← 画面中央寄せ */
+#question,
+#answer,
+#settingsPanel {
+    overscroll-behavior: contain;
+    overflow: hidden;
+    touch-action: none;
 }
 
-html, body { height:100%; overflow: hidden; }
-  
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    /* overflow: hidden; ← これは削除 */
+}
+
 </style>
 </head>
 <body>
