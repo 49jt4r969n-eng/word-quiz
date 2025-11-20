@@ -126,7 +126,16 @@ button {
   <label><input type="checkbox" class="unitCheck" value="unit4" checked> Plus 不定詞</label><br>
   <label><input type="checkbox" class="unitCheck" value="unit5" checked> 動名詞(1)</label><br>
   <label><input type="checkbox" class="unitCheck" value="unit6" checked> 動名詞(2)</label><br>
+  <hr>
+  <label>答えの色:
+    <select id="answerColorSelect">
+      <option value="green" selected>ボタンと同じ緑色</option>
+      <option value="black">黒</option>
+    </select>
+  </label>
 </div>
+
+
 
 <main>
   <div id="question">ここに問題が表示されます</div>
@@ -387,6 +396,14 @@ document.getElementById('toggleLang').addEventListener('click', ()=>{
 document.getElementById('settingsBtn').addEventListener('click', ()=>{
   const panel = document.getElementById('settingsPanel');
   panel.style.display = panel.style.display==='none'?'block':'none';
+});
+
+const answerEl = document.getElementById('answer');
+const colorSelect = document.getElementById('answerColorSelect');
+
+colorSelect.addEventListener('change', () => {
+  if(colorSelect.value === 'green') answerEl.style.color = '#4CAF50';
+  else answerEl.style.color = 'black';
 });
 
 // 初回表示
