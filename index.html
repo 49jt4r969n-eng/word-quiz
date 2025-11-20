@@ -3,142 +3,283 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ランダム単語クイズ</title>
+<title>英語ランダム一問一答アプリ</title>
 <style>
-body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; text-align: center; margin: 30px; }
-textarea { width: 90%; height: 100px; margin: 10px 0; font-size:16px; }
-#question { font-size: 20px; margin: 20px; word-wrap: break-word; white-space: pre-wrap; max-width: 90%; margin-left:auto; margin-right:auto; margin-bottom:160px; }
-#answer {
-  font-size: 18px;
-  margin: 20px auto 160px auto; /* 下余白を増やしてボタンに被らないように */
-  color: green;
-  word-wrap: break-word;
-  white-space: pre-wrap;
-  max-width: 90%;
-  min-height: 50px;
-}
-/* ボタン群を固定 */
-#controls {
-  position: fixed;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 15px;
-  z-index: 1000;
-}
-/* ボタンを大きくしてタップしやすく */
-#controls button {
-  padding: 15px 25px;
-  font-size: 18px;
-  border-radius: 12px;
-  border: none;
-  background-color: #007AFF;
-  color: white;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-  cursor: pointer;
-}
-#controls button:active {
-  background-color: #005BBB;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
+  body { font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; margin:0; padding:0; background:#f0f0f0;}
+  header { position: fixed; top:0; width:100%; background:#4CAF50; color:white; padding:10px; text-align:center; font-size:1.2em; z-index:10;}
+  #settingsBtn { position: absolute; right:10px; top:10px; background:white; color:#4CAF50; border:none; padding:5px 10px; border-radius:5px; font-size:0.9em;}
+  #settingsPanel { display:none; position: fixed; top:50px; right:10px; background:white; border:1px solid #ccc; padding:10px; z-index:10; max-width:90%; border-radius:8px;}
+  main { margin-top:60px; padding:20px; text-align:center;}
+  #question { font-size:1.2em; margin-bottom:20px; white-space:normal; word-wrap:break-word; line-height:1.5em; max-width:90vw; margin-left:auto; margin-right:auto;}
+  button { display:block; width:80%; max-width:300px; margin:10px auto; padding:15px; font-size:1.1em; border:none; border-radius:10px; background:#4CAF50; color:white;}
+  #answer { font-size:1.1em; margin-top:15px; min-height:2em;}
 </style>
 </head>
 <body>
 
-<h1>ランダム単語クイズ</h1>
+<header>
+  英語ランダム一問一答
+  <button id="settingsBtn">設定</button>
+</header>
 
-<textarea id="inputWords" placeholder="ここに英文と和訳を貼り付け（スペースなしでもOK）"></textarea><br>
-<button onclick="addWords()">単語を追加</button>
-
-<div id="question">ここに問題が表示されます</div>
-<div id="answer"></div>
-
-<div id="controls">
-  <button onclick="showAnswer()">答えを見る</button>
-  <button onclick="nextQuestion()">次の問題</button>
-  <button onclick="toggleDirection()">切替 (英→日 / 日→英)</button>
+<div id="settingsPanel">
+  <label><input type="checkbox" class="unitCheck" value="unit1" checked> 不定詞(1)</label><br>
+  <label><input type="checkbox" class="unitCheck" value="unit2" checked> 不定詞(2)</label><br>
+  <label><input type="checkbox" class="unitCheck" value="unit3" checked> 不定詞(3)</label><br>
+  <label><input type="checkbox" class="unitCheck" value="unit4" checked> Plus 不定詞</label><br>
+  <label><input type="checkbox" class="unitCheck" value="unit5" checked> 動名詞(1)</label><br>
+  <label><input type="checkbox" class="unitCheck" value="unit6" checked> 動名詞(2)</label><br>
 </div>
 
+<main>
+  <div id="question">ここに問題が表示されます</div>
+  <button id="showAnswer">答えを見る</button>
+  <button id="nextQuestion">次の問題</button>
+  <div id="answer"></div>
+</main>
+
 <script>
-let wordList = [];
-let currentWord = null;
-let lastIndex = -1;
-let direction = "en2ja";
+const units = {};
 
-// 英字判定：アルファベット＋アポストロフィ＋括弧・句読点・!?・カンマなど
-function isEnglish(char) {
-  return /^[A-Za-z’'\[\]\(\)\{\}\!\?,\.:;]$/.test(char);
+// --- unit1 不定詞(1) ---
+units.unit1 = [
+{en:"She has decided to go to the dentist.", ja:"彼女は歯医者に行くことを決心しました。"},
+{en:"We are planning to spend one week in Hawaii.", ja:"私たちはハワイで1週間過ごす予定です。"},
+{en:"He refuses to take my advice.", ja:"彼は私のアドバイスに従うことを断っています。"},
+{en:"My dream is to play in the Major Leagues.", ja:"私の夢はメジャーリーグでプレイすることです。"},
+{en:"It was easy to solve the math problem.", ja:"その数学の問題を解くことは簡単でした。"},
+{en:"It is interesting to learn about other cultures", ja:"他の文化について学ぶことはおもしろい。"},
+{en:"We found it difficult to beat them in the soccer game.", ja:"サッカーの試合で彼らを負かすのは難しいと分かった。"},
+{en:"I think it helpful to look up words in the dictionary.", ja:"辞書で単語を調べることは役に立つと思います。"},
+{en:"Do you have anything cold to drink?", ja:"何か冷たい飲み物はありますか。"},
+{en:"They're looking for someone to look after their dog.", ja:"彼らの犬の面倒を見てくれる人を探しています。"},
+{en:"There is nothing to worry about anymore.", ja:"もはや何も心配することはありません。"},
+{en:"There is no time to read books.", ja:"本を読む時間はありません。"},
+{en:"She is going to visit the museum to see Picasso's paintings tomorrow.", ja:"彼女は明日、ピカソの絵を見るためにその美術館に行くつもりです。"},
+{en:"He has to get up at five o'clock in the morning to catch the first train.", ja:"彼は始発電車に乗るために朝5時に起きなければなりません。"},
+{en:"I'm saving money to buy a new computer.", ja:"新しいコンピュータを買うためにお金を貯めています。"},
+{en:"I sometimes visit my grandmother to look after her.", ja:"私は面倒を見るためにときどき祖母を訪ねます。"},
+{en:"I was very surprised to hear about their marriage.", ja:"私は彼らの結婚を聞いてとても驚きました。"},
+{en:"I was very pleased to get a letter from him.", ja:"私は彼から手紙をもらい，とても嬉しかったです。"},
+{en:"rushed to the store, only to find it was sold out.", ja:"大急ぎで店に行きましたが、それは売り切れていました。"},
+{en:"I was careless to sit on the glasses.", ja:"眼鏡の上に座るとは、私は不注意でした。"},
+{en:"He decided to be an actor in the future.", ja:"彼は将来、俳優になる決心をしました。"},
+{en:"I think it difficult to finish my homework in an hour.", ja:"私の宿題を1時間で終えるのは難しいと思います。"},
+{en:"I had no time to watch TV last night.", ja:"昨夜はテレビを見る時間がありませんでした。"},
+{en:"She was happy to find her lost earring.", ja:"なくしたイヤリングを見つけて彼女は喜びました。"},
+{en:"You were careless to lose your key.", ja:"鍵をなくすなんて、君は不注意でした。"},
+{en:"My dream is to be an astronaut and to travel in space.", ja:"私の夢は、宇宙飛行士になって宇宙を旅行することです。"},
+{en:"In order to be an astronaut, I have a lot of things to do.", ja:"宇宙飛行士になるためには、すべきことがたくさんあります。"},
+{en:"It is necessary to train my body and to study hard.", ja:"体を鍛えることと、勉強を一生懸命することが必要です。"},
+{en:"I will try my best to achieve my goal.", ja:"私の目標を達成するために最善を尽くします。"}
+];
+
+// --- unit2 不定詞(2) ---
+units.unit2 = [
+{en:"The rule in the library is not to talk loudly.", ja:"図書館のルールは大声で話さないことです。"},
+{en:"It is difficult for her not to use her smartphone for three days.", ja:"彼女にとって3日間スマホを使わないことは難しい。"},
+{en:"You should be careful not to forget your umbrella on the train.", ja:"電車に傘を置き忘れないように注意すべきです。"},
+{en:"Her concert is to be held in Tokyo on Sunday.", ja:"彼女のコンサートが日曜日に東京で開催される予定だ。"},
+{en:"You are to use only English in class.", ja:"授業中は英語だけを使わなければなりません。"},
+{en:"His books came to be read by a lot of people in Japan.", ja:"彼の本が日本でたくさんの人に読まれるようになりました。"},
+{en:"Volunteer work has gotten to be known widely.", ja:"ボランティア活動は広く知られるようになりました。"},
+{en:"She seems to like traveling in other countries.", ja:"彼女は外国を旅行するのが好きなようです。"},
+{en:"He appears to be respected by his teammates.", ja:"彼はチームメートから尊敬されているようです。"},
+{en:"I happened to see a friend from junior high school.", ja:"中学校時代の友人に無然会いました。"},
+{en:"The book has turned out to be very helpful.", ja:"その本はとても役に立つことがわかりました。"},
+{en:"He seems to have been caught in the rain.", ja:"彼は雨に降られたようです。"},
+{en:"She appears to have finished writing her report.", ja:"彼女はレポートを書くのを終えたようです。"},
+{en:"He is very sorry to have been late for class again.", ja:"彼は再び授業に遅れたことをたいへん申し訳なく思っている。"},
+{en:"I happened to be waiting for a bus at the bus stop.", ja:"私はたまたまバス停でバスを待っていました。"},
+{en:"I want to be listening to his songs all day.", ja:"私は一日中彼の歌を聞いていたい。"},
+{en:"I don't like to be laughed at in front of people.", ja:"私は人前で笑われるのが好きではありません。"},
+{en:"We decided not to go out because it was raining heavily.", ja:"雨が激しく降っていたので、私たちは外出しないことに決めた。"},
+{en:"The speech contest is to be held next Wednesday.", ja:"スピーチコンテストは来週の水曜日に行われる予定です。"},
+{en:"They have finally gotten to understand each other.", ja:"彼らはようやくお互いを理解し合えるようになりました。"},
+{en:"His bike seems[appears] to have a flat tire.", ja:"彼の自転車はパンクして（have a flat tire）いるようです。"},
+{en:"They seem to have succeeded in the experiment.", ja:"彼らはその実験に成功したようです。"},
+{en:"I happened to see him when I went to the library yesterday.", ja:"昨日図書館に行ったときたまたま彼に会ったよ"},
+{en:"He seems to be fine. / It appears that he is fine.", ja:"彼は気そうだよ。"},
+{en:"We should be careful not to have an accident.", ja:"私たちは事故を起こさないように注意しないと。"}
+];
+
+// --- unit3 不定詞(3) ---
+units.unit3 = [
+{en:"I learned how to ride a bike from my father.", ja:"私は父から自転車の乗り方を習いました。"},
+{en:"I didn't know what to say to him.", ja:"私は彼に何と声をかけてよいかわからなかった。"},
+{en:"I told my wife where to change trains to go to Kamakura.", ja:"鎌倉へ行くのにどこで電車を乗り換えたらよいか妻に教えた。"},
+{en:"I don't know which cake to choose at the shop", ja:"その店でどのケーキを選んだらよいかわかりません。"},
+{en:"The math problem is easy to solve.", ja:"その数学の問題は解くのがやさしい。"},
+{en:"The computer manual is hard to understand.", ja:"そのコンピュータの説明書は理解するのが難しい。"},
+{en:"Her handwriting is impossible to read.", ja:"彼女の手書きの文字は読むのが不可能です。"},
+{en:"This river is dangerous to swim in after the rain.", ja:"この川は雨が降った後に泳ぐのは危険です。"},
+{en:"They are sure to win the tournament.", ja:"彼らはきっとそのトーナメント試合に勝つでしょう。"},
+{en:"She is happy to help people.", ja:"彼女は喜んで人を助けます。"},
+{en:"I am ready to accept an invitation from them.", ja:"私は喜んで彼らからの招待を受けるつもりです。"},
+{en:"She is eager to do lots of sightseeing in Japan.", ja:"彼女は日本の多くの場所を観光したがっています。"},
+{en:"He is not old enough to understand the problem.", ja:"彼はその問題を理解するのに十分な年齢ではない。"},
+{en:"There is not enough pizza for everyone to eat.", ja:"みんなが食べるのに十分なピザはありません。"},
+{en:"This box is too heavy for you to carry.", ja:"この箱はあなたが運ぶには重すぎます。"},
+{en:"The soup is too hot to eat now.", ja:"そのスープは、今飲むには熱すぎます。"},
+{en:"To begin with, she has to type her password into the computer.", ja:"まず初めに彼女はパスワードをコンピュータに入力しなければならない。"},
+{en:"To tell the truth, l'm very interested in Japanese history.", ja:"実を言うと、私は日本の歴史にとても関心があります。"},
+{en:"Neediess to say, he needs to get an international license.", ja:"言うまでもなく、彼は国際免許をとる必要がある。"},
+{en:"To be honest, that color doesn't suit her.", ja:"正直に言って、その色は彼女に似合いません。"},
+{en:"I was too busy to call you last night.", ja:"私は昨晩、忙しすぎてあなたに籠話できませんでした。"},
+{en:"Could you tell me how to get to the bank?", ja:"銀行への行き方を教えてもらえませんか。"},
+{en:"My grandfather is very healthy. He is likely to live to be one hundred years old.", ja:"祖父はとても元気です。100歳まで生きそうです。"},
+{en:"He was happy to make [cook] dinner for his family.", ja:"彼は喜んで家族のために夕食を作りました。"},
+{en:"To tell the truth, I overslept and missed the train.", ja:"実を言うと、私は寝坊をしてその電車に乗り遅れた。"},
+{en:"I want to learn how to use this machine.", ja:"私はこの機械の使い方を身につけたい。"},
+{en:"The manual is very difficult to understand.", ja:"そのマニュアルは理解するのがとても難しい。"},
+{en:"To be honest, I was too sleepy to finish reading it.", ja:"正直に言うと，眠すぎてそれを読み終えられなかった。"}
+];
+
+// --- unit4 Plus不定詞 ---
+units.unit4 = [
+{en:"I saw him hand a present to her.", ja:"私は彼が彼女にプレゼントを渡すのを見ました。"},
+{en:"I heard many fire engines go by my house.", ja:"家のそばを消防車が何台も通るのが聞こえました。"},
+{en:"I listened to my classmate make a speech on the environmental problem.", ja:"私は級友が環境問題についてスピーチをするのを聞きました。"},
+{en:"We watched the sun rise above the horizon.", ja:"私たちは水平線の上に太陽が昇るのを見ていました。"},
+{en:"That made her cough all night yesterday.", ja:"そのため、昨日、彼女は一晩中咳をしていました。"},
+{en:"He should have the dentist check his teeth.", ja:"彼は歯医者に歯を診てもらうべきです。"},
+{en:"He doesn't let me enter his room after a quarrel.", ja:"けんかの後は、彼は私を彼の部屋に入れてくれません。"},
+{en:"My mother told my father to go to bed early.", ja:"母は早く寝るように父に言いました。"},
+{en:"I asked my father to drive me to the station.", ja:"父に駅まで車で送ってもらうように頼みました。"},
+{en:"I'm not sure if I can persuade him to agree with our plan.", ja:"彼を説得して私達の計画に賛成してもらえるかどうか分からない。"},
+{en:"I want my husband to help me prepare dinner.", ja:"私は夫に夕食の準備を手伝ってほしいと思います。"},
+{en:"My mother allowed me to go shopping with my friends.", ja:"母は、私が友人と買い物に行くのを許してくれました。"},
+{en:"My parents expect my brother to live on his own.", ja:"両親は兄が独立して生活することを期待しています。"},
+{en:"I was asked to mail the letter on my way to school by my sister.", ja:"姉に学校へ行く途中でその手紙を投函するように頼まれました。"},
+{en:"I was told to clean the bathroom by my mother.", ja:"母に風呂の掃除をするように言われました。"},
+{en:"We were made to run ten kilometers every day by our coach.", ja:"私たちはコーチに毎日10キロ走らされました。"},
+{en:"The boy was seen to take out the cake in the fridge by his mother.", ja:"その男の子は冷蔵庫のケーキを取り出すのを母親に見られた。"},
+{en:"I heard the phone ring many times in my sister's room.", ja:"姉の部屋で電話が何度も鳴るのが聞こえました。"},
+{en:"I have never seen him get angry.", ja:"私は彼が腹を立てるのを見たことがありません。"},
+{en:"The teacher made him do his homework after school.", ja:"その先生は彼に放課後に宿題をさせました。"},
+{en:"She had her uncle fix [repair] her computer.", ja:"彼女はおじにパソコンを直してもらいました。"},
+{en:"I asked my brother to get a ticket for their concert.", ja:"兄に彼らのコンサートのチケットを手に入れるように頼みました。"},
+{en:"I was told to keep Katie in the cage by my mother.", ja:"私は母にケイティをケージに入れておくように言われた。"},
+{en:"She wanted Katie not to run around.", ja:"彼女はケイティに走り回らないようにしてほしかった。"},
+{en:"My mother let her come out of the cage quickly.", ja:"母はすぐに彼女がケージから出てくるのを許してあげた。"},
+{en:"That made me laugh.", ja:"あれには私も笑ってしまいました。"}
+];
+
+// --- unit5 動名詞(1) ---
+units.unit5 = [
+{en:"Baking bread on weekends is my pastime.", ja:"週末にパンを焼くことが私の気晴らしです。"},
+{en:"My brother likes talking to old people.", ja:"私の弟はお年寄りと話をするのが好きです。"},
+{en:"I continued working without a break.", ja:"私は休憩なしに働き続けました。"},
+{en:"The most exciting thing was sleeping in a tent.", ja:"最もわくわくしたのは、テントで眠ることでした。"},
+{en:"My son's dream is playing at the Koshien Stadium.", ja:"息子の夢は甲子園球場で試合をすることです。"},
+{en:"She refused to receive the prize.", ja:"彼女は賞を受けることを断りました。"},
+{en:"We enjoyed having a barbecue.", ja:"私たちはバーベキューをして楽しみました。"},
+{en:"He promised to call me when he arrives there.", ja:"彼は向こうに着いたら私に電話すると約束しました。"},
+{en:"I have to avoid eating too much chocolate.", ja:"私はチョコレートの食べすぎを避けねばならない。"},
+{en:"She suggested having a break.", ja:"彼女は休憩をとることを提案しました。"},
+{en:"Remember to close the windows before you leave.", ja:"出かける前に忘れずに窓を閉めなさい。"},
+{en:"I remember closing the windows before I left.", ja:"出かける前に窓を閉めたことを覚えています。"},
+{en:"Don't forget to feed our dog while we are away.", ja:"私たちが留守の間，忘れずに犬に餌をあげてください。"},
+{en:"He forgot buying the book before and bought it again.", ja:"彼は以前にその本を買ったことを忘れて、また買った。"},
+{en:"I tried to stay awake to watch the TV program.", ja:"そのテレビ番組を見るため起きていようと努めた。"},
+{en:"I tried using ketchup instead of salt and pepper.", ja:"私は塩こしょうの代わりにケチャップを使ってみた。"},
+{en:"I regret to say that he can't play in the game tonight.", ja:"残念ながら彼は今晩の試合に出られません。"},
+{en:"I regret selling my car.", ja:"私は車を売ったことを後悔しています。"},
+{en:"He is afraid of losing his job.", ja:"彼は仕事を失うことを怖れています。"},
+{en:"I'm dreaming of being a violinist in the future.", ja:"私は将来バイオリニストになることを夢見ています。"},
+{en:"She insisted on paying for the dinner.", ja:"彼女は夕食の料金を払うと言ってききませんでした。"},
+{en:"Thank you for lending me your electronic dictionary.", ja:"電子辞書を貸してくれてありがとう。"},
+{en:"After finishing dinner, we watched fireworks.", ja:"夕食を終えた後、私たちは花火を見ました。"},
+{en:"Instead of driving a car, we took a train to go to Tokyo.", ja:"東京へ行くのに、私たちは車を運転するのでなく電車を利用した。"},
+{en:"In spite of making several mistakes, he passed the test.", ja:"いくつか間違いをしたにもかかわらず、彼は試験に合格した。"},
+{en:"She left home this morning without having her lunch box with her.", ja:"今朝、彼女は弁当箱を持たずに家を出ました。"},
+{en:"I'm sure of her getting to the meeting in time.", ja:"きっと彼女は会議に間に合うように着くと思います。"},
+{en:"Would you mind my turning off the air conditioner?", ja:"エアコンを切ってもかまいませんか。"},
+{en:"I can't imagine his [him] cleaning his room.", ja:"私は彼が自分の部屋を掃除するのを想像できません。"},
+{en:"I'm sorry for her feeling ill.", ja:"私は彼女が具合を悪くしているのを気の毒に思う。"},
+{en:"Could you stop making noise?", ja:"音を立てるのをやめていただけませんか。"},
+{en:"My wife is not good at cooking.", ja:"私の妻は料理をするのが上手ではありません。"},
+{en:"I remember meeting the woman somewhere before.", ja:"私は以前にその女性にどこかで会ったことを覚えています。"},
+{en:"I don't like my husband reading a newspaper at breakfast.", ja:"私は夫が朝食のときに新聞を読むのが気に入らない。"},
+{en:"I like running and swimming, so I want to be a PE teacher.", ja:"私は走ったり泳いだりが好きで、体育の先生になりたい。"},
+{en:"I'm good at drawing pictures and making thing.", ja:"僕は絵を描いたり物を作ったりするのが得意なんだ。"},
+{en:"I hope to join Paris Fashion Week someday.", ja:"いつかパリコレに参加したいな。"},
+{en:"Remember to invite me to your show.", ja:"私をあなたのショーに忘れずに招待してね。"}
+];
+
+// --- unit6 動名詞(2) ---
+units.unit6 = [
+{en:"Not having a car in this neighborhood is very inconvenient.", ja:"この近辺で車を持たないことはとても不便です。"},
+{en:"I can't imagine not having you in my life.", ja:"私の人生にあなたがいないことは想像できません。"},
+{en:"I regretted not having my glasses.", ja:"私は眼鏡を持っていないことを後悔しました。"},
+{en:"He hated not being able to watch TV when he wanted.", ja:"彼は見たい時にテレビを見ることができないのがいやでした。"},
+{en:"She is proud of having made a speech at the conference.", ja:"彼女はその会議でスピーチしたことを誇りに思っています。"},
+{en:"I am sorry for not having apologized to him immediately.", ja:"すぐに彼に謝罪しなかったことを申し訳なく思っています。"},
+{en:"You should be ashamed about having shouted at your child.", ja:"子どもを怒鳴ったことを恥ずかしく思うべきです。"},
+{en:"She insisted on having closed the door when she left the house.", ja:"彼女は家を出た時に扉を閉めたと言い張った。"},
+{en:"I was surprised at being spoken to from behind by someone.", ja:"誰かに後ろから声をかけられて驚きました。"},
+{en:"I imagined being surrounded by a lot of children.", ja:"たくさんの子どもたちに囲まれていることを想像しました。"},
+{en:"I remember being introduced to the woman at the party.", ja:"そのパーティーでその女性に紹介されたことを覚えています。"},
+{en:"He fears being fired by his company.", ja:"彼は会社から解雇されることを怖れています。"},
+{en:"My brother is looking forward to using it.", ja:"弟はそれを使うのを楽しみにしています。"},
+{en:"She is used to getting up early.", ja:"彼女は早く起きることに慣れています。"},
+{en:"We couldn't help shouting for joy.", ja:"私たちは嬉しくて叫ばずにはいられませんでした。"},
+{en:"It is no use asking for his opinion.", ja:"彼の意見を求めてもきだです。"},
+{en:"I didn't feel like getting up this morning because of the cold.", ja:"寒さのために今朝は起きたくありませんでした。"},
+{en:"How about having dinner at the new Italian restaurant this evening?", ja:"今晩その新しいイタリアンレストランで夕食をとるのはいかがですか"},
+{en:"There is no predicting where an accident will happen.", ja:"どこで事故が起こるか予測することはできません。"},
+{en:"The film is worth seeing.", ja:"その映画は見る価値があります。"},
+{en:"Not paying taxes is illegal in many countries.", ja:"税金を払わないことは多くの国で違法です。"},
+{en:"We regret having eaten at the restaurant.", ja:"私たちはその食堂で食事したことを後悔している。"},
+{en:"I'm sorry for not having called you last night.", ja:"昨夜あなたに電話しなくてごめんなさい。"},
+{en:"I am looking forward to seeing you again next year.", ja:"来年再びお会いするのを楽しみにしています。"},
+{en:"It is no use persuading her to apologize to you.", ja:"彼女を説得して謝らせようとしてもむだです。"},
+{en:"At first, I didn't like being spoken to in English.", ja:"最初，英語で話しかけられるのがいやだった。"},
+{en:"I am used [accustomed] to living here now.", ja:"今はここで生活することに慣れています。"},
+{en:"I sometimes feel like going back to Japan.", ja:"私は時々、日本に帰りたい気持ちになります。"},
+{en:"I am looking forward to seeing my family in Japan again.", ja:"日本で家族と再会するのを楽しみにしています。"}
+];
+
+// --- ランダム出題機能 ---
+let currentQuestion = null;
+
+function getSelectedUnits() {
+  const checked = [...document.querySelectorAll('.unitCheck:checked')].map(cb => cb.value);
+  let selected = [];
+  checked.forEach(unit => { if(units[unit]) selected = selected.concat(units[unit]); });
+  return selected;
 }
 
-// 英文にスペースがない場合、自動で単語間にスペースを入れる
-// ハイフンは削除して表示
-function autoSpaceEnglish(text) {
-  if (text.includes(' ')) return text.replace(/-/g, ''); // スペースがある場合もハイフン削除
-  text = text.replace(/([a-z])([A-Z])/g, '$1 $2'); 
-  text = text.replace(/([A-Z])([A-Z][a-z])/g, '$1 $2'); 
-  text = text.replace(/([a-zA-Z])(\d)/g, '$1 $2'); 
-  text = text.replace(/(\d)([a-zA-Z])/g, '$1 $2'); 
-  return text.replace(/-/g, '');
+function getRandomQuestion() {
+  const selected = getSelectedUnits();
+  if(selected.length===0) return null;
+  return selected[Math.floor(Math.random()*selected.length)];
 }
 
-// 単語追加
-function addWords() {
-  let rawText = document.getElementById("inputWords").value.trim();
-  if (!rawText) return;
-  rawText = rawText.replace(/[\r\n\t]+/g, ''); // 改行・タブのみ削除
-
-  let temp = '';
-  let en = '', ja = '';
-  let mode = null;
-
-  for (let i = 0; i < rawText.length; i++) {
-    const c = rawText[i];
-    const charIsEnglish = isEnglish(c);
-
-    if (c === ' ') { temp += c; continue; }
-
-    if (mode === null) { mode = charIsEnglish ? 'en' : 'ja'; temp += c; }
-    else if (mode === 'en' && charIsEnglish) temp += c;
-    else if (mode === 'en' && !charIsEnglish) { en = autoSpaceEnglish(temp); temp = c; mode = 'ja'; }
-    else if (mode === 'ja' && !charIsEnglish) temp += c;
-    else if (mode === 'ja' && charIsEnglish) { ja = temp; temp = c; mode = 'en'; }
-
-    if (en && ja) { wordList.push({en, ja}); en=''; ja=''; }
+function showQuestion() {
+  currentQuestion = getRandomQuestion();
+  if(!currentQuestion){
+    document.getElementById('question').textContent = "単元を1つ以上選んでください。";
+    document.getElementById('answer').textContent = "";
+    return;
   }
-
-  if (mode === 'ja' && en && temp) { wordList.push({en, ja: temp}); }
-  document.getElementById("inputWords").value = "";
-  nextQuestion();
+  document.getElementById('question').textContent = currentQuestion.en;
+  document.getElementById('answer').textContent = "";
 }
 
-// 次の問題表示
-function nextQuestion() {
-  if (wordList.length === 0) return;
-  let index;
-  do { index = Math.floor(Math.random() * wordList.length); }
-  while (index === lastIndex && wordList.length > 1);
+document.getElementById('showAnswer').addEventListener('click', ()=>{
+  if(currentQuestion) document.getElementById('answer').textContent = currentQuestion.ja;
+});
 
-  lastIndex = index;
-  currentWord = wordList[index];
-  document.getElementById("answer").textContent = "";
-  document.getElementById("question").textContent =
-    direction === "en2ja" ? currentWord.en : currentWord.ja;
-}
+document.getElementById('nextQuestion').addEventListener('click', showQuestion);
 
-// 答え表示
-function showAnswer() {
-  if (!currentWord) return;
-  document.getElementById("answer").textContent =
-    direction === "en2ja" ? currentWord.ja : currentWord.en;
-}
+document.getElementById('settingsBtn').addEventListener('click', ()=>{
+  const panel = document.getElementById('settingsPanel');
+  panel.style.display = panel.style.display==='none'?'block':'none';
+});
 
-// 英→日 / 日→英 切替
-function toggleDirection() {
-  direction = direction === "en2ja" ? "ja2en" : "en2ja";
-  nextQuestion();
-}
+// 初回表示
+showQuestion();
 </script>
-
 </body>
 </html>
