@@ -14,7 +14,7 @@ textarea { width: 90%; height: 100px; margin: 10px 0; }
 </head>
 <body>
 
-<h1>ランダム単語クイズ</h1>
+<h1>ランダム単語クイズ1</h1>
 
 <textarea id="inputWords" placeholder="ここに英文と和訳を貼り付け（スペースなしでもOK）"></textarea><br>
 <button onclick="addWords()">単語を追加</button>
@@ -33,19 +33,20 @@ let currentWord = null;
 let lastIndex = -1;
 let direction = "en2ja";
 
-// 英字かどうか判定
+// 英字かどうか判定（空白は英字判定には含めない）
 function isEnglish(char) {
   return /^[A-Za-z]$/.test(char);
 }
 
 // 英文にスペースがない場合、自動で単語間にスペースを入れる
 function autoSpaceEnglish(text) {
-  // すでにスペースがある場合は残す
+  // すでにスペースがある場合はそのまま残す
   if (text.includes(' ')) return text;
-  text = text.replace(/([a-z])([A-Z])/g, '$1 $2');
-  text = text.replace(/([A-Z])([A-Z][a-z])/g, '$1 $2');
-  text = text.replace(/([a-zA-Z])(\d)/g, '$1 $2');
-  text = text.replace(/(\d)([a-zA-Z])/g, '$1 $2');
+
+  text = text.replace(/([a-z])([A-Z])/g, '$1 $2'); // 小文字→大文字
+  text = text.replace(/([A-Z])([A-Z][a-z])/g, '$1 $2'); // 大文字連続の単語境目
+  text = text.replace(/([a-zA-Z])(\d)/g, '$1 $2'); // 英字→数字
+  text = text.replace(/(\d)([a-zA-Z])/g, '$1 $2'); // 数字→英字
   return text;
 }
 
@@ -64,6 +65,11 @@ function addWords() {
   for (let i = 0; i < rawText.length; i++) {
     const c = rawText[i];
     const charIsEnglish = isEnglish(c);
+    
+    if (c === ' ') {  // 空白はそのまま追加
+      temp += c;
+      continue;
+    }
 
     if (mode === null) {
       mode = charIsEnglish ? 'en' : 'ja';
@@ -76,4 +82,56 @@ function addWords() {
       mode = 'ja';
     } else if (mode === 'ja' && !charIsEnglish) {
       temp += c;
-    } els
+    } else if (mode === 'ja' && charIsEnglish) {
+      ja = temp;
+      temp = c;
+      mode = 'en';
+    }
+
+    if (en && ja) {
+      wordList.push({en, ja});
+      en = ''; ja = '';
+    }
+  }
+
+  if (mode === 'ja' && en && temp) {
+    wordList.push({en, ja: temp});
+  }
+
+  document.getElementById("inputWords").value = "";
+  nextQuestion();
+}
+
+// 次の問題表示
+function nextQuestion() {
+  if (wordList.length === 0) return;
+
+  let index;
+  do {
+    index = Math.floor(Math.random() * wordList.length);
+  } while (index === lastIndex && wordList.length > 1);
+
+  lastIndex = index;
+  currentWord = wordList[index];
+
+  document.getElementById("answer").textContent = "";
+  document.getElementById("question").textContent =
+    direction === "en2ja" ? currentWord.en : currentWord.ja;
+}
+
+// 答え表示
+function showAnswer() {
+  if (!currentWord) return;
+  document.getElementById("answer").textContent =
+    direction === "en2ja" ? currentWord.ja : currentWord.en;
+}
+
+// 英→日 / 日→英 切替
+function toggleDirection() {
+  direction = direction === "en2ja" ? "ja2en" : "en2ja";
+  nextQuestion();
+}
+</script>
+
+</body>
+</html>
