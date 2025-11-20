@@ -40,11 +40,12 @@ function isEnglish(char) {
 
 // 英文にスペースがない場合、自動で単語間にスペースを入れる
 function autoSpaceEnglish(text) {
-  if (text.includes(' ')) return text; // すでにスペースがあればそのまま
-  text = text.replace(/([a-z])([A-Z])/g, '$1 $2'); // 小文字→大文字
-  text = text.replace(/([A-Z])([A-Z][a-z])/g, '$1 $2'); // 大文字連続の単語境目
-  text = text.replace(/([a-zA-Z])(\d)/g, '$1 $2'); // 英字→数字
-  text = text.replace(/(\d)([a-zA-Z])/g, '$1 $2'); // 数字→英字
+  // すでにスペースがある場合は残す
+  if (text.includes(' ')) return text;
+  text = text.replace(/([a-z])([A-Z])/g, '$1 $2');
+  text = text.replace(/([A-Z])([A-Z][a-z])/g, '$1 $2');
+  text = text.replace(/([a-zA-Z])(\d)/g, '$1 $2');
+  text = text.replace(/(\d)([a-zA-Z])/g, '$1 $2');
   return text;
 }
 
@@ -53,10 +54,12 @@ function addWords() {
   let rawText = document.getElementById("inputWords").value.trim();
   if (!rawText) return;
 
-  rawText = rawText.replace(/\s+/g, ''); // 改行・空白を削除
+  // 改行・タブのみ削除（空白は残す）
+  rawText = rawText.replace(/[\r\n\t]+/g, '');
+
   let temp = '';
   let en = '', ja = '';
-  let mode = null; // 'en' または 'ja'
+  let mode = null;
 
   for (let i = 0; i < rawText.length; i++) {
     const c = rawText[i];
@@ -73,57 +76,4 @@ function addWords() {
       mode = 'ja';
     } else if (mode === 'ja' && !charIsEnglish) {
       temp += c;
-    } else if (mode === 'ja' && charIsEnglish) {
-      ja = temp;
-      temp = c;
-      mode = 'en';
-    }
-
-    if (en && ja) {
-      wordList.push({en, ja});
-      en = ''; ja = '';
-    }
-  }
-
-  // 最後に残ったものを追加
-  if (mode === 'ja' && en && temp) {
-    wordList.push({en, ja: temp});
-  }
-
-  document.getElementById("inputWords").value = "";
-  nextQuestion();
-}
-
-// 次の問題表示
-function nextQuestion() {
-  if (wordList.length === 0) return;
-
-  let index;
-  do {
-    index = Math.floor(Math.random() * wordList.length);
-  } while (index === lastIndex && wordList.length > 1);
-
-  lastIndex = index;
-  currentWord = wordList[index];
-
-  document.getElementById("answer").textContent = "";
-  document.getElementById("question").textContent =
-    direction === "en2ja" ? currentWord.en : currentWord.ja;
-}
-
-// 答え表示
-function showAnswer() {
-  if (!currentWord) return;
-  document.getElementById("answer").textContent =
-    direction === "en2ja" ? currentWord.ja : currentWord.en;
-}
-
-// 英→日 / 日→英 切替
-function toggleDirection() {
-  direction = direction === "en2ja" ? "ja2en" : "en2ja";
-  nextQuestion();
-}
-</script>
-
-</body>
-</html>
+    } els
