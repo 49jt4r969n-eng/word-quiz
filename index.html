@@ -3,23 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>英語ランダム一問一答アプリ</title>
+<title>英語ランダム一問一答</title>
 <style>
-  body { font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; margin:0; padding:0; background:#f0f0f0;}
-  header { position: fixed; top:0; width:100%; background:#4CAF50; color:white; padding:10px; text-align:center; font-size:1.2em; z-index:10;}
-  #settingsBtn { position: absolute; right:10px; top:10px; background:white; color:#4CAF50; border:none; padding:5px 10px; border-radius:5px; font-size:0.9em;}
-  #settingsPanel { display:none; position: fixed; top:50px; right:10px; background:white; border:1px solid #ccc; padding:10px; z-index:10; max-width:90%; border-radius:8px;}
-  main { margin-top:60px; padding:20px; text-align:center;}
-  #question { font-size:1.2em; margin-bottom:20px; white-space:normal; word-wrap:break-word; line-height:1.5em; max-width:90vw; margin-left:auto; margin-right:auto;}
-  button { display:block; width:80%; max-width:300px; margin:10px auto; padding:15px; font-size:1.1em; border:none; border-radius:10px; background:#4CAF50; color:white;}
-  #answer { font-size:1.1em; margin-top:15px; min-height:2em;}
+body { font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; margin:0; padding:0; background:#f0f0f0;}
+header { position: fixed; top:0; width:100%; background:#4CAF50; color:white; padding:10px; text-align:center; font-size:1.2em; z-index:10;}
+#settingsBtn { position: absolute; right:10px; top:10px; background:white; color:#4CAF50; border:none; padding:5px 10px; border-radius:50%; font-size:1em;}
+#settingsPanel { display:none; position: fixed; top:50px; right:10px; background:white; border:1px solid #ccc; padding:10px; z-index:10; max-width:90%; border-radius:8px;}
+main { margin-top:60px; padding:20px; text-align:center;}
+#question { font-size:1.2em; margin-bottom:20px; white-space:pre-wrap; word-wrap:break-word; line-height:1.5em; max-width:90vw; margin-left:auto; margin-right:auto;}
+button { display:block; width:80%; max-width:300px; margin:10px auto; padding:15px; font-size:1.1em; border:none; border-radius:10px; cursor:pointer;}
+#answer { font-size:1.1em; margin-top:15px; min-height:2em;}
+.toggleBtn { background:#ADFF2F; color:black; } /* 黄緑ボタン */
+.normalBtn { background:#4CAF50; color:white; }
 </style>
 </head>
 <body>
 
 <header>
   英語ランダム一問一答
-  <button id="settingsBtn">設定</button>
+  <button id="settingsBtn">⚙️</button>
 </header>
 
 <div id="settingsPanel">
@@ -33,15 +35,18 @@
 
 <main>
   <div id="question">ここに問題が表示されます</div>
-  <button id="showAnswer">答えを見る</button>
-  <button id="nextQuestion">次の問題</button>
+  <button id="showAnswer" class="normalBtn">答えを見る</button>
+  <button id="nextQuestion" class="normalBtn">次の問題</button>
+  <button id="toEnglish" class="toggleBtn">日→英</button>
+  <button id="toJapanese" class="toggleBtn">英→日</button>
   <div id="answer"></div>
 </main>
 
 <script>
 const units = {};
+// --- unit1～unit6の内容は省略（前回の長いリストをここにコピー） ---
 
-// --- unit1 不定詞(1) ---
+  // --- unit1 不定詞(1) ---
 units.unit1 = [
 {en:"She has decided to go to the dentist.", ja:"彼女は歯医者に行くことを決心しました。"},
 {en:"We are planning to spend one week in Hawaii.", ja:"私たちはハワイで1週間過ごす予定です。"},
@@ -239,9 +244,11 @@ units.unit6 = [
 {en:"I sometimes feel like going back to Japan.", ja:"私は時々、日本に帰りたい気持ちになります。"},
 {en:"I am looking forward to seeing my family in Japan again.", ja:"日本で家族と再会するのを楽しみにしています。"}
 ];
+  
+// ここに先ほどのunit1～unit6の配列をまるごとコピーしてください
 
-// --- ランダム出題機能 ---
 let currentQuestion = null;
+let showEnglish = true; // true=英語表示、false=日本語表示
 
 function getSelectedUnits() {
   const checked = [...document.querySelectorAll('.unitCheck:checked')].map(cb => cb.value);
@@ -263,15 +270,33 @@ function showQuestion() {
     document.getElementById('answer').textContent = "";
     return;
   }
+  showEnglish = true;
   document.getElementById('question').textContent = currentQuestion.en;
   document.getElementById('answer').textContent = "";
 }
 
+// ボタン動作
 document.getElementById('showAnswer').addEventListener('click', ()=>{
   if(currentQuestion) document.getElementById('answer').textContent = currentQuestion.ja;
 });
 
 document.getElementById('nextQuestion').addEventListener('click', showQuestion);
+
+// 日→英
+document.getElementById('toEnglish').addEventListener('click', ()=>{
+  if(currentQuestion) {
+    document.getElementById('question').textContent = currentQuestion.ja;
+    document.getElementById('answer').textContent = currentQuestion.en;
+  }
+});
+
+// 英→日
+document.getElementById('toJapanese').addEventListener('click', ()=>{
+  if(currentQuestion) {
+    document.getElementById('question').textContent = currentQuestion.en;
+    document.getElementById('answer').textContent = currentQuestion.ja;
+  }
+});
 
 document.getElementById('settingsBtn').addEventListener('click', ()=>{
   const panel = document.getElementById('settingsPanel');
