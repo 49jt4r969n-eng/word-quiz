@@ -14,7 +14,7 @@ textarea { width: 90%; height: 100px; margin: 10px 0; }
 </head>
 <body>
 
-<h1>ランダム単語クイズ11</h1>
+<h1>ランダム単語クイズα</h1>
 
 <textarea id="inputWords" placeholder="ここに英文と和訳を貼り付け（スペースなしでもOK）"></textarea><br>
 <button onclick="addWords()">単語を追加</button>
@@ -33,9 +33,9 @@ let currentWord = null;
 let lastIndex = -1;
 let direction = "en2ja";
 
-// 英字かどうか判定（アポストロフィ ’ ' やハイフンも含む）
+// 英字判定：アルファベット＋アポストロフィ＋ハイフン＋句読点・カンマ・クエスチョンマーク・感嘆符
 function isEnglish(char) {
-  return /^[A-Za-z’'\-]$/.test(char);
+  return /^[A-Za-z’'\-\!\?,\.:;]$/.test(char);
 }
 
 // 英文にスペースがない場合、自動で単語間にスペースを入れる
@@ -48,7 +48,7 @@ function autoSpaceEnglish(text) {
   return text;
 }
 
-// 単語追加関数
+// 単語追加
 function addWords() {
   let rawText = document.getElementById("inputWords").value.trim();
   if (!rawText) return;
