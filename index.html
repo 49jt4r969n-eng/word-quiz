@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ランダム単語クイズ</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; text-align: center; margin: 50px; }
+button { padding: 10px 20px; margin: 5px; font-size: 16px; }
+#question { font-size: 24px; margin: 20px; }
+#answer { font-size: 20px; margin: 20px; color: green; }
+textarea { width: 90%; height: 100px; margin: 10px 0; }
+</style>
+</head>
+<body>
+
+<h1>ランダム単語クイズ</h1>
+
+<textarea id="inputWords" placeholder="ここに単語と意味を貼り付け（改行・スペース無視で自動解析）"></textarea><br>
+<button onclick="addWords()">単語を追加</button>
+<br>
+
+<div id="question">ここに問題が表示されます</div>
+<div id="answer"></div>
+
+<button onclick="showAnswer()">答えを見る</button>
+<button onclick="nextQuestion()">次の問題</button>
+<button onclick="toggleDirection()">切替 (英→日 / 日→英)</button>
+
+<script>
+let wordList = [];
+let currentWord = null;
+let lastIndex = -1;
+let direction = "en2ja";
+
+// 英字かどうか判定
+function isEnglish(char) {
+  return /^[A-Za-z]$/.test(char);
+}
+
+// 単語追加関数
+function addWords() {
+  const rawText = document.getElementById("inputWords").value.trim();
+  if (!rawText) return;
+
+  const text = rawText.replace(/\s+/g, ''); // 改行・空白を削除
+  let temp = '';
+  let en = '', ja = '';
+  let mode = null; // 'en' または 'ja'
+
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    const charIsEnglish = isEnglish(c);
+
+    if (mode === null) {
+      mode = charIsEnglish ? 'en' : 'ja';
+      temp += c;
+    } else if (mode === 'en' && charIsEnglish) {
+      temp += c;
+    } else if (mode === 'en' && !charIsEnglish) {
+      en = temp;
+      temp = c;
+      mode = 'ja';
+    } else if (mode === 'ja' && !charIsEnglish) {
+      temp += c;
+    } else if (mode === 'ja' && charIsEnglish) {
+      ja = temp;
+      temp = c;
+      mode = 'en';
+    }
+
+    if (en && ja) {
+      wordList.push({en, ja});
+      en = ''; ja = '';
+    }
+  }
+
+  // 最後に残ったものを追加
+  if (mode === 'ja' && en && temp) {
+    wordList.push({en, ja: temp});
+  }
+
+  document.getElementById("inputWords").value = "";
+  nextQuestion();
+}
+
+// 次の問題表示
+function nextQuestion() {
+  if (wordList.length === 0) return;
+
+  let index;
+  do {
+    index = Math.floor(Math.random() * wordList.length);
+  } while (index === lastIndex && wordList.length > 1);
+
+  lastIndex = index;
+  currentWord = wordList[index];
+
+  document.getElementById("answer").textContent = "";
+  document.getElementById("question").textContent =
+    direction === "en2ja" ? currentWord.en : currentWord.ja;
+}
+
+// 答え表示
+function showAnswer() {
+  if (!currentWord) return;
+  document.getElementById("answer").textContent =
+    direction === "en2ja" ? currentWord.ja : currentWord.en;
+}
+
+// 英→日 / 日→英 切替
+function toggleDirection() {
+  direction = direction === "en2ja" ? "ja2en" : "en2ja";
+  nextQuestion();
+}
+
+// 初期状態では何も表示しない
+</script>
+
+</body>
+</html>
