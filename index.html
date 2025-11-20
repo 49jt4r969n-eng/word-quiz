@@ -14,7 +14,7 @@ textarea { width: 90%; height: 100px; margin: 10px 0; }
 </head>
 <body>
 
-<h1>ランダム単語クイズ1</h1>
+<h1>ランダム単語クイズ11</h1>
 
 <textarea id="inputWords" placeholder="ここに英文と和訳を貼り付け（スペースなしでもOK）"></textarea><br>
 <button onclick="addWords()">単語を追加</button>
@@ -33,20 +33,18 @@ let currentWord = null;
 let lastIndex = -1;
 let direction = "en2ja";
 
-// 英字かどうか判定（空白は英字判定には含めない）
+// 英字かどうか判定（アポストロフィ ’ ' やハイフンも含む）
 function isEnglish(char) {
-  return /^[A-Za-z]$/.test(char);
+  return /^[A-Za-z’'\-]$/.test(char);
 }
 
 // 英文にスペースがない場合、自動で単語間にスペースを入れる
 function autoSpaceEnglish(text) {
-  // すでにスペースがある場合はそのまま残す
   if (text.includes(' ')) return text;
-
-  text = text.replace(/([a-z])([A-Z])/g, '$1 $2'); // 小文字→大文字
-  text = text.replace(/([A-Z])([A-Z][a-z])/g, '$1 $2'); // 大文字連続の単語境目
-  text = text.replace(/([a-zA-Z])(\d)/g, '$1 $2'); // 英字→数字
-  text = text.replace(/(\d)([a-zA-Z])/g, '$1 $2'); // 数字→英字
+  text = text.replace(/([a-z])([A-Z])/g, '$1 $2'); 
+  text = text.replace(/([A-Z])([A-Z][a-z])/g, '$1 $2'); 
+  text = text.replace(/([a-zA-Z])(\d)/g, '$1 $2'); 
+  text = text.replace(/(\d)([a-zA-Z])/g, '$1 $2'); 
   return text;
 }
 
@@ -55,7 +53,7 @@ function addWords() {
   let rawText = document.getElementById("inputWords").value.trim();
   if (!rawText) return;
 
-  // 改行・タブのみ削除（空白は残す）
+  // 改行・タブのみ削除（空白は保持）
   rawText = rawText.replace(/[\r\n\t]+/g, '');
 
   let temp = '';
@@ -65,8 +63,8 @@ function addWords() {
   for (let i = 0; i < rawText.length; i++) {
     const c = rawText[i];
     const charIsEnglish = isEnglish(c);
-    
-    if (c === ' ') {  // 空白はそのまま追加
+
+    if (c === ' ') { // 空白はそのまま
       temp += c;
       continue;
     }
