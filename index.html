@@ -364,10 +364,11 @@ function showQuestion() {
     document.getElementById('answer').textContent = "";
     return;
   }
-  showingEnglish = true;
-  document.getElementById('question').textContent = currentQuestion.en;
+  // showingEnglish を保持したまま表示
+  document.getElementById('question').textContent = showingEnglish ? currentQuestion.en : currentQuestion.ja;
   document.getElementById('answer').textContent = "";
 }
+
 
 // ボタン動作
 document.getElementById('showAnswer').addEventListener('click', ()=>{
