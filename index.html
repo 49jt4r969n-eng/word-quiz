@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ランダム単語クイズ</title>
 <style>
-body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; text-align: center; margin: 50px; }
+body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; text-align: center; margin: 30px; }
 button { padding: 10px 20px; margin: 5px; font-size: 16px; }
-#question { font-size: 24px; margin: 20px; }
-#answer { font-size: 20px; margin: 20px; color: green; }
+#question { font-size: 20px; margin: 20px; word-wrap: break-word; white-space: pre-wrap; max-width: 90%; margin-left:auto; margin-right:auto; }
+#answer { font-size: 18px; margin: 20px; color: green; word-wrap: break-word; white-space: pre-wrap; max-width: 90%; margin-left:auto; margin-right:auto; }
 textarea { width: 90%; height: 100px; margin: 10px 0; }
 </style>
 </head>
@@ -16,7 +16,7 @@ textarea { width: 90%; height: 100px; margin: 10px 0; }
 
 <h1>ランダム単語クイズ</h1>
 
-<textarea id="inputWords" placeholder="ここに単語と意味を貼り付け（改行・スペース無視で自動解析）"></textarea><br>
+<textarea id="inputWords" placeholder="ここに英文と和訳を貼り付け（スペースなしでもOK）"></textarea><br>
 <button onclick="addWords()">単語を追加</button>
 <br>
 
@@ -38,18 +38,26 @@ function isEnglish(char) {
   return /^[A-Za-z]$/.test(char);
 }
 
+// 英文にスペースがない場合、自動で単語間にスペースを入れる
+function autoSpaceEnglish(text) {
+  // 連続する小文字・大文字・数字の境目にスペースを入れる
+  return text.replace(/([a-z])([A-Z])/g, '$1 $2')
+             .replace(/([a-zA-Z])(\d)/g, '$1 $2')
+             .replace(/(\d)([a-zA-Z])/g, '$1 $2');
+}
+
 // 単語追加関数
 function addWords() {
-  const rawText = document.getElementById("inputWords").value.trim();
+  let rawText = document.getElementById("inputWords").value.trim();
   if (!rawText) return;
 
-  const text = rawText.replace(/\s+/g, ''); // 改行・空白を削除
+  rawText = rawText.replace(/\s+/g, ''); // 改行・空白を削除
   let temp = '';
   let en = '', ja = '';
   let mode = null; // 'en' または 'ja'
 
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
+  for (let i = 0; i < rawText.length; i++) {
+    const c = rawText[i];
     const charIsEnglish = isEnglish(c);
 
     if (mode === null) {
@@ -58,7 +66,7 @@ function addWords() {
     } else if (mode === 'en' && charIsEnglish) {
       temp += c;
     } else if (mode === 'en' && !charIsEnglish) {
-      en = temp;
+      en = autoSpaceEnglish(temp);
       temp = c;
       mode = 'ja';
     } else if (mode === 'ja' && !charIsEnglish) {
@@ -113,8 +121,6 @@ function toggleDirection() {
   direction = direction === "en2ja" ? "ja2en" : "en2ja";
   nextQuestion();
 }
-
-// 初期状態では何も表示しない
 </script>
 
 </body>
