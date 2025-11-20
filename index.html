@@ -8,13 +8,23 @@
 body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; text-align: center; margin: 30px; }
 button { padding: 10px 20px; margin: 5px; font-size: 16px; }
 #question { font-size: 20px; margin: 20px; word-wrap: break-word; white-space: pre-wrap; max-width: 90%; margin-left:auto; margin-right:auto; }
-#answer { font-size: 18px; margin: 20px; color: green; word-wrap: break-word; white-space: pre-wrap; max-width: 90%; margin-left:auto; margin-right:auto; }
+#answer {
+  font-size: 18px;
+  margin: 20px;
+  color: green;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  max-width: 90%;
+  margin-left:auto;
+  margin-right:auto;
+  min-height: 50px; /* 高さ固定でボタン位置を安定 */
+}
 textarea { width: 90%; height: 100px; margin: 10px 0; }
 </style>
 </head>
 <body>
 
-<h1>ランダム単語クイズα</h1>
+<h1>ランダム単語クイズ</h1>
 
 <textarea id="inputWords" placeholder="ここに英文と和訳を貼り付け（スペースなしでもOK）"></textarea><br>
 <button onclick="addWords()">単語を追加</button>
@@ -33,7 +43,7 @@ let currentWord = null;
 let lastIndex = -1;
 let direction = "en2ja";
 
-// 英字判定：アルファベット＋アポストロフィ＋ハイフン＋句読点・カンマ・クエスチョンマーク・感嘆符
+// 英字判定：アルファベット＋アポストロフィ＋ハイフン＋句読点・カンマ・疑問符・感嘆符
 function isEnglish(char) {
   return /^[A-Za-z’'\-\!\?,\.:;]$/.test(char);
 }
@@ -53,7 +63,7 @@ function addWords() {
   let rawText = document.getElementById("inputWords").value.trim();
   if (!rawText) return;
 
-  // 改行・タブのみ削除（空白は保持）
+  // 改行・タブのみ削除（空白保持）
   rawText = rawText.replace(/[\r\n\t]+/g, '');
 
   let temp = '';
