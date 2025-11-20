@@ -1,18 +1,9 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-Z2FJ3JGRWS"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-Z2FJ3JGRWS');
-</script>
 
 <title>英語ランダム一問一答</title>
 <style>
@@ -43,8 +34,8 @@ header {
 
 #settingsBtn {
   position: fixed;
-  top: 37px;    /* 下から20px */
-  right: 20px;     /* 右から20px */
+  top: 37px;
+  right: 20px;
   width: 50px;
   height: 50px;
   background: white;
@@ -54,13 +45,11 @@ header {
   font-size: 2.0em;
   cursor: pointer;
   z-index: 10;
-
   display: flex;
   justify-content: center;
   align-items: center;
-
-  line-height: 1;          /* 余計な上下ズレ防止 */
-  padding: 0;              /* 念のためのズレ防止 */
+  line-height: 1;
+  padding: 0;
 }
 
 #settingsPanel {
@@ -69,14 +58,14 @@ header {
   top: 10%;
   left: 5%;
   width: 40%;
-  height: 27%;
+  height: 35%;
   background: white;
   border: 1px solid #ccc;
   padding: 20px;
   z-index: 10;
   border-radius: 12px;
   overflow-y: auto;
-  font-size: 1.2em; /* 文字大きく */
+  font-size: 1.2em;
 }
 
 main {
@@ -105,7 +94,7 @@ main {
   min-height:2em;
   white-space:pre-wrap;
   word-wrap:break-word;
-  color:#4CAF50; /* ボタンと同じ色 */
+  color:#4CAF50;
 }
 
 .buttonContainer {
@@ -131,23 +120,14 @@ button {
 }
 
 #answerColorSelect {
-  font-size: 1.0em;   /* 文字サイズを大きく */
-  padding: 2px 10px;  /* 上下左右の余白を大きく */
-  width: 90%;        /* パネル幅に合わせる */
-  max-width: 300px;   /* 最大幅 */
+  font-size: 1.0em;
+  padding: 2px 10px;
+  width: 90%;
+  max-width: 300px;
   border-radius: 6px;
 }
 
-#question,
-#answer,
-{
-    overscroll-behavior: contain;
-    overflow: hidden;
-    touch-action: none;
-}
-
 html, body { height:100%; overflow: hidden; }
-
 </style>
 </head>
 <body>
@@ -170,10 +150,9 @@ html, body { height:100%; overflow: hidden; }
       <option value="green" selected>緑</option>
       <option value="black">黒</option>
     </select>
-  </label>
+  </label><br>
+  <label><input type="checkbox" id="randomToggle" checked> ランダム表示</label>
 </div>
-
-
 
 <main>
   <div id="question">ここに問題が表示されます</div>
@@ -189,7 +168,8 @@ html, body { height:100%; overflow: hidden; }
 <script>
 const units = {};
 
-  // --- unit1 不定詞(1) ---
+// 例: units.unit1 = [ {en:"", ja:""}, ... ];
+    // --- unit1 不定詞(1) ---
 units.unit1 = [
 {en:"She has decided to go to the dentist.", ja:"彼女は歯医者に行くことを決心しました。"},
 {en:"We are planning to spend one week in Hawaii.", ja:"私たちはハワイで1週間過ごす予定です。"},
@@ -388,9 +368,13 @@ units.unit6 = [
 {en:"I am looking forward to seeing my family in Japan again.", ja:"日本で家族と再会するのを楽しみにしています。"}
 ];
 
+
 let currentQuestion = null;
 let showingEnglish = true;
+let currentIndex = 0;
+let randomMode = true;
 
+// 選択された単元の配列を取得
 function getSelectedUnits() {
   const checked = [...document.querySelectorAll('.unitCheck:checked')].map(cb => cb.value);
   let selected = [];
@@ -398,24 +382,29 @@ function getSelectedUnits() {
   return selected;
 }
 
-function getRandomQuestion() {
+// 次の問題を取得（ランダム／順番）
+function getNextQuestion() {
   const selected = getSelectedUnits();
   if(selected.length===0) return null;
-  return selected[Math.floor(Math.random()*selected.length)];
+  if(randomMode){
+    return selected[Math.floor(Math.random()*selected.length)];
+  } else {
+    if(currentIndex >= selected.length) currentIndex = 0;
+    return selected[currentIndex++];
+  }
 }
 
+// 質問表示
 function showQuestion() {
-  currentQuestion = getRandomQuestion();
+  currentQuestion = getNextQuestion();
   if(!currentQuestion){
     document.getElementById('question').textContent = "単元を1つ以上選んでください。";
     document.getElementById('answer').textContent = "";
     return;
   }
-  // showingEnglish を保持したまま表示
   document.getElementById('question').textContent = showingEnglish ? currentQuestion.en : currentQuestion.ja;
   document.getElementById('answer').textContent = "";
 }
-
 
 // ボタン動作
 document.getElementById('showAnswer').addEventListener('click', ()=>{
@@ -436,16 +425,23 @@ document.getElementById('settingsBtn').addEventListener('click', ()=>{
   panel.style.display = panel.style.display==='none'?'block':'none';
 });
 
+// 答えの色
 const answerEl = document.getElementById('answer');
 const colorSelect = document.getElementById('answerColorSelect');
-
 colorSelect.addEventListener('change', () => {
-  if(colorSelect.value === 'green') answerEl.style.color = '#4CAF50';
-  else answerEl.style.color = 'black';
+  answerEl.style.color = colorSelect.value === 'green' ? '#4CAF50' : 'black';
+});
+
+// ランダム／順番切り替え
+document.getElementById('randomToggle').addEventListener('change', (e)=>{
+  randomMode = e.target.checked;
+  currentIndex = 0;
+  showQuestion();
 });
 
 // 初回表示
 showQuestion();
 </script>
+
 </body>
 </html>
