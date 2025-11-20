@@ -126,6 +126,14 @@ button {
   border-radius: 6px;
 }
 
+#questionText, #answerText {
+  overflow-y: hidden;       /* ← 縦スクロール禁止 */
+  overflow-x: hidden;       /* ← 横スクロールも禁止（必要なら） */
+  white-space: normal;      /* ← 自然に折り返す */
+  text-align: center;       /* ← 画面中央寄せ */
+}
+
+
 </style>
 </head>
 <body>
