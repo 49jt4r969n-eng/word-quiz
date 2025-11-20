@@ -40,10 +40,12 @@ function isEnglish(char) {
 
 // 英文にスペースがない場合、自動で単語間にスペースを入れる
 function autoSpaceEnglish(text) {
-  // 連続する小文字・大文字・数字の境目にスペースを入れる
-  return text.replace(/([a-z])([A-Z])/g, '$1 $2')
-             .replace(/([a-zA-Z])(\d)/g, '$1 $2')
-             .replace(/(\d)([a-zA-Z])/g, '$1 $2');
+  if (text.includes(' ')) return text; // すでにスペースがあればそのまま
+  text = text.replace(/([a-z])([A-Z])/g, '$1 $2'); // 小文字→大文字
+  text = text.replace(/([A-Z])([A-Z][a-z])/g, '$1 $2'); // 大文字連続の単語境目
+  text = text.replace(/([a-zA-Z])(\d)/g, '$1 $2'); // 英字→数字
+  text = text.replace(/(\d)([a-zA-Z])/g, '$1 $2'); // 数字→英字
+  return text;
 }
 
 // 単語追加関数
