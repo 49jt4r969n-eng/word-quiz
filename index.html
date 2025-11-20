@@ -13,7 +13,6 @@ main { margin-top:60px; padding:20px; text-align:center;}
 #question { font-size:1.2em; margin-bottom:20px; white-space:pre-wrap; word-wrap:break-word; line-height:1.5em; max-width:90vw; margin-left:auto; margin-right:auto;}
 button { display:block; width:80%; max-width:300px; margin:10px auto; padding:15px; font-size:1.1em; border:none; border-radius:10px; cursor:pointer;}
 #answer { font-size:1.1em; margin-top:15px; min-height:2em;}
-.toggleBtn { background:#ADFF2F; color:black; } /* 黄緑ボタン */
 .normalBtn { background:#4CAF50; color:white; }
 </style>
 </head>
@@ -37,14 +36,13 @@ button { display:block; width:80%; max-width:300px; margin:10px auto; padding:15
   <div id="question">ここに問題が表示されます</div>
   <button id="showAnswer" class="normalBtn">答えを見る</button>
   <button id="nextQuestion" class="normalBtn">次の問題</button>
-  <button id="toEnglish" class="toggleBtn">日→英</button>
-  <button id="toJapanese" class="toggleBtn">英→日</button>
+  <button id="toggleLang" class="normalBtn">日⇄英</button>
   <div id="answer"></div>
 </main>
 
 <script>
 const units = {};
-// --- unit1～unit6の内容は省略（前回の長いリストをここにコピー） ---
+// --- unit1～unit6の内容はここにコピーしてください ---
 
   // --- unit1 不定詞(1) ---
 units.unit1 = [
@@ -244,11 +242,10 @@ units.unit6 = [
 {en:"I sometimes feel like going back to Japan.", ja:"私は時々、日本に帰りたい気持ちになります。"},
 {en:"I am looking forward to seeing my family in Japan again.", ja:"日本で家族と再会するのを楽しみにしています。"}
 ];
-  
-// ここに先ほどのunit1～unit6の配列をまるごとコピーしてください
+
 
 let currentQuestion = null;
-let showEnglish = true; // true=英語表示、false=日本語表示
+let showingEnglish = true;
 
 function getSelectedUnits() {
   const checked = [...document.querySelectorAll('.unitCheck:checked')].map(cb => cb.value);
@@ -270,31 +267,27 @@ function showQuestion() {
     document.getElementById('answer').textContent = "";
     return;
   }
-  showEnglish = true;
+  showingEnglish = true;
   document.getElementById('question').textContent = currentQuestion.en;
   document.getElementById('answer').textContent = "";
 }
 
-// ボタン動作
 document.getElementById('showAnswer').addEventListener('click', ()=>{
-  if(currentQuestion) document.getElementById('answer').textContent = currentQuestion.ja;
+  if(currentQuestion) document.getElementById('answer').textContent = showingEnglish ? currentQuestion.ja : currentQuestion.en;
 });
 
 document.getElementById('nextQuestion').addEventListener('click', showQuestion);
 
-// 日→英
-document.getElementById('toEnglish').addEventListener('click', ()=>{
-  if(currentQuestion) {
-    document.getElementById('question').textContent = currentQuestion.ja;
-    document.getElementById('answer').textContent = currentQuestion.en;
-  }
-});
-
-// 英→日
-document.getElementById('toJapanese').addEventListener('click', ()=>{
-  if(currentQuestion) {
+// 日⇄英切替ボタン
+document.getElementById('toggleLang').addEventListener('click', ()=>{
+  if(!currentQuestion) return;
+  showingEnglish = !showingEnglish;
+  if(showingEnglish){
     document.getElementById('question').textContent = currentQuestion.en;
-    document.getElementById('answer').textContent = currentQuestion.ja;
+    document.getElementById('answer').textContent = "";
+  } else {
+    document.getElementById('question').textContent = currentQuestion.ja;
+    document.getElementById('answer').textContent = "";
   }
 });
 
