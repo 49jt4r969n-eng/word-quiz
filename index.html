@@ -3,12 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ランダム単語クイズα</title>
+<title>ランダム単語クイズ</title>
 <style>
 body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; text-align: center; margin: 30px; }
 textarea { width: 90%; height: 100px; margin: 10px 0; font-size:16px; }
-#question { font-size: 20px; margin: 20px; word-wrap: break-word; white-space: pre-wrap; max-width: 90%; margin-left:auto; margin-right:auto; margin-bottom:120px; }
-#answer { font-size: 18px; margin: 20px; color: green; word-wrap: break-word; white-space: pre-wrap; max-width: 90%; margin-left:auto; margin-right:auto; min-height: 50px; margin-bottom: 120px; }
+#question { font-size: 20px; margin: 20px; word-wrap: break-word; white-space: pre-wrap; max-width: 90%; margin-left:auto; margin-right:auto; margin-bottom:160px; }
+#answer {
+  font-size: 18px;
+  margin: 20px auto 160px auto; /* 下余白を増やしてボタンに被らないように */
+  color: green;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  max-width: 90%;
+  min-height: 50px;
+}
 /* ボタン群を固定 */
 #controls {
   position: fixed;
@@ -58,19 +66,20 @@ let currentWord = null;
 let lastIndex = -1;
 let direction = "en2ja";
 
-// 英字判定：アルファベット＋アポストロフィ＋ハイフン＋句読点・カンマ・疑問符・感嘆符
+// 英字判定：アルファベット＋アポストロフィ＋括弧・句読点・!?・カンマなど
 function isEnglish(char) {
-  return /^[A-Za-z’'\-\!\?,\.:;]$/.test(char);
+  return /^[A-Za-z’'\[\]\(\)\{\}\!\?,\.:;]$/.test(char);
 }
 
 // 英文にスペースがない場合、自動で単語間にスペースを入れる
+// ハイフンは削除して表示
 function autoSpaceEnglish(text) {
-  if (text.includes(' ')) return text;
+  if (text.includes(' ')) return text.replace(/-/g, ''); // スペースがある場合もハイフン削除
   text = text.replace(/([a-z])([A-Z])/g, '$1 $2'); 
   text = text.replace(/([A-Z])([A-Z][a-z])/g, '$1 $2'); 
   text = text.replace(/([a-zA-Z])(\d)/g, '$1 $2'); 
   text = text.replace(/(\d)([a-zA-Z])/g, '$1 $2'); 
-  return text;
+  return text.replace(/-/g, '');
 }
 
 // 単語追加
